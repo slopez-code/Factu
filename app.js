@@ -11,7 +11,7 @@ function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, (m) => ({ '&
 
 let toastTimer;
 function toast(msg) {
-  const el = $('#toast');
+  const el = $('#toast'); 
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
