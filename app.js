@@ -82,10 +82,17 @@ $$('.auth-tab').forEach((t) => {
 
 function showAuth() {
   $('#authWrap').style.display = 'flex';
+  $('#resetWrap').style.display = 'none';
   $('#appWrap').style.display = 'none';
+}
+function showResetPassword() {
+  $('#authWrap').style.display = 'none';
+  $('#appWrap').style.display = 'none';
+  $('#resetWrap').style.display = 'flex';
 }
 function showApp() {
   $('#authWrap').style.display = 'none';
+  $('#resetWrap').style.display = 'none';
   $('#appWrap').style.display = 'block';
   $('#tabUsuarios').style.display = profile.role === 'admin' ? '' : 'none';
   updateEmpresaTag();
@@ -126,7 +133,8 @@ if (sb) {
   $('#forgotBtn').addEventListener('click', async () => {
     const email = prompt('Escribe el email de tu cuenta para enviarte un enlace de recuperación:');
     if (!email) return;
-    const { error } = await sb.auth.resetPasswordForEmail(email.trim());
+    const redirectTo = window.location.origin + window.location.pathname;
+    const { error } = await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo });
     toast(error ? 'No se pudo enviar el email' : 'Revisa tu correo para restablecer la contraseña');
   });
 
@@ -134,6 +142,23 @@ if (sb) {
     await sb.auth.signOut();
     session = null; profile = null; empresa = null;
     showAuth();
+  });
+
+  $('#resetPassForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = $('#resetPassError');
+    errEl.style.color = 'var(--danger)';
+    errEl.textContent = '';
+    const p1 = $('#resetPass1').value;
+    const p2 = $('#resetPass2').value;
+    if (p1 !== p2) { errEl.textContent = 'Las contraseñas no coinciden.'; return; }
+    if (p1.length < 6) { errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.'; return; }
+    const { error } = await sb.auth.updateUser({ password: p1 });
+    if (error) { errEl.textContent = translateAuthError(error.message); return; }
+    toast('Contraseña actualizada');
+    $('#resetPassForm').reset();
+    const { data } = await sb.auth.getSession();
+    if (data.session) { await handleSession(data.session); } else { showAuth(); }
   });
 }
 
@@ -187,15 +212,25 @@ async function handleSession(sess) {
 
 async function init() {
   if (!sb) return;
+  let recovering = false;
+  sb.auth.onAuthStateChange((event, sess) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      recovering = true;
+      showResetPassword();
+    } else if (event === 'SIGNED_OUT') {
+      showAuth();
+    }
+  });
+  // Pequeña espera para dejar que Supabase procese el enlace de recuperación de la URL
+  // antes de decidir qué pantalla mostrar.
+  await new Promise((r) => setTimeout(r, 150));
+  if (recovering) return;
   const { data } = await sb.auth.getSession();
   if (data.session) {
     await handleSession(data.session);
   } else {
     showAuth();
   }
-  sb.auth.onAuthStateChange((event) => {
-    if (event === 'SIGNED_OUT') showAuth();
-  });
 }
 
 /* ================= EMPRESA ================= */

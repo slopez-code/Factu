@@ -73,6 +73,31 @@
   </div>
 </div>
 
+<!-- ================= NUEVA CONTRASEÑA (tras enlace de recuperación) ================= -->
+<div class="auth-wrap" id="resetWrap" style="display:none;">
+  <div class="auth-card">
+    <div class="brand" style="justify-content:center;margin-bottom:18px;">
+      <div class="brand-mark">F</div>
+      <div>
+        <h1 style="color:var(--ink);">Nueva contraseña</h1>
+        <p style="color:var(--text-mute);">Elige una contraseña nueva para tu cuenta</p>
+      </div>
+    </div>
+    <form id="resetPassForm">
+      <div class="field">
+        <label for="resetPass1">Nueva contraseña</label>
+        <input type="password" id="resetPass1" minlength="6" required autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label for="resetPass2">Repite la contraseña</label>
+        <input type="password" id="resetPass2" minlength="6" required autocomplete="new-password">
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Guardar contraseña</button>
+      <p class="auth-error" id="resetPassError"></p>
+    </form>
+  </div>
+</div>
+
 <div class="app" id="appWrap" style="display:none;">
   <header class="topbar">
     <div class="brand">
