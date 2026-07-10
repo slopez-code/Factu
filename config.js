@@ -14,5 +14,5 @@
    5. Ve a SQL Editor, pega el contenido de setup.sql y ejecútalo
    ========================================================= */
 
-const SUPABASE_URL = '';
-const SUPABASE_ANON_KEY = '';
+const SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
+const SUPABASE_ANON_KEY = 'TU_CLAVE_ANON_PUBLICA';

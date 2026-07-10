@@ -1,5 +1,7 @@
 # Factura de Intervención — PWA multiusuario (100% gratis, claves fuera del repo)
 
+**¿Prisa?** Sigue `QUICKSTART.md` — checklist de 9 pasos, ~10 minutos, con un script (`deploy-setup.sh`) que hace el `git push` por ti.
+
 App instalable (PWA) para generar facturas/partes de intervención de cualquier profesión, con **login por email y contraseña**, **base de datos en la nube** compartida por tu equipo, exportación a **PDF**, **envío por email**, **historial** completo y **claves de conexión gestionadas como variables de entorno** (nunca quedan escritas en el código ni en el historial de Git).
 
 Stack, 100% capa gratuita, sin tarjeta:
