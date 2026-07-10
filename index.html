@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Factura de Intervención</title>
+<meta name="description" content="Genera facturas de intervención para cualquier profesión, con datos de empresa y cliente, exportación a PDF, envío por email e historial.">
+<meta name="theme-color" content="#10233F">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="install-banner" id="installBanner">
+  <span>Instala la app en tu dispositivo para usarla sin conexión.</span>
+  <button id="installBtn">Instalar</button>
+</div>
+
+<!-- ================= PANTALLA DE ACCESO ================= -->
+<div class="auth-wrap" id="authWrap">
+  <div class="auth-card">
+    <div class="brand" style="justify-content:center;margin-bottom:18px;">
+      <div class="brand-mark">F</div>
+      <div>
+        <h1 style="color:var(--ink);">Factura de Intervención</h1>
+        <p style="color:var(--text-mute);">Accede a tu cuenta de empresa</p>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-authview="login">Entrar</button>
+      <button class="auth-tab" data-authview="signup">Crear cuenta</button>
+    </div>
+
+    <form id="loginForm" class="auth-form active">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPass">Contraseña</label>
+        <input type="password" id="loginPass" required autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+      <button class="btn btn-ghost btn-block" id="forgotBtn" type="button" style="margin-top:8px;">He olvidado mi contraseña</button>
+      <p class="auth-error" id="loginError"></p>
+    </form>
+
+    <form id="signupForm" class="auth-form">
+      <div class="field">
+        <label for="suNombre">Tu nombre</label>
+        <input type="text" id="suNombre" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="suEmail">Email</label>
+        <input type="email" id="suEmail" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="suPass">Contraseña</label>
+        <input type="password" id="suPass" minlength="6" required autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label for="suInvite">Código de equipo (opcional)</label>
+        <input type="text" id="suInvite" placeholder="Déjalo vacío para crear una empresa nueva">
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Crear cuenta</button>
+      <p class="auth-error" id="signupError"></p>
+      <p class="auth-hint">Si tu jefe/a ya tiene una cuenta de empresa, pídele el código de equipo (Ajustes → Equipo) para uniros a los mismos datos.</p>
+    </form>
+  </div>
+</div>
+
+<div class="app" id="appWrap" style="display:none;">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">F</div>
+      <div>
+        <h1>Factura de Intervención</h1>
+        <p id="empresaTag">Configura tu empresa en «Ajustes»</p>
+      </div>
+      <button class="logout-btn" id="logoutBtn" title="Cerrar sesión">⏻</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-view="nueva">Nueva</button>
+    <button class="tab" data-view="historial">Historial</button>
+    <button class="tab" data-view="clientes">Clientes</button>
+    <button class="tab" data-view="usuarios" id="tabUsuarios" style="display:none;">Equipo</button>
+    <button class="tab" data-view="empresa">Ajustes</button>
+  </nav>
+
+  <!-- NUEVA FACTURA -->
+  <section class="view active" id="view-nueva">
+
+    <div class="card">
+      <div class="card-title">Documento</div>
+      <div class="row2">
+        <div class="field">
+          <label for="docTipo">Tipo</label>
+          <select id="docTipo">
+            <option value="Factura de intervención">Factura de intervención</option>
+            <option value="Presupuesto">Presupuesto</option>
+            <option value="Albarán de intervención">Albarán de intervención</option>
+            <option value="Factura">Factura</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="docFecha">Fecha</label>
+          <input type="date" id="docFecha">
+        </div>
+      </div>
+      <div class="field">
+        <label>Número</label>
+        <input type="text" id="docNumero" readonly>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cliente</div>
+      <div id="clienteChips"></div>
+      <div class="field" style="margin-top:8px;">
+        <label for="clNombre">Nombre / Razón social</label>
+        <input type="text" id="clNombre" placeholder="Ej. María Pérez / Comunidad de Vecinos c/Sol 4">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="clNif">NIF / DNI</label>
+          <input type="text" id="clNif" placeholder="00000000X">
+        </div>
+        <div class="field">
+          <label for="clTelefono">Teléfono</label>
+          <input type="tel" id="clTelefono" placeholder="600 000 000">
+        </div>
+      </div>
+      <div class="field">
+        <label for="clDireccion">Dirección de la intervención</label>
+        <input type="text" id="clDireccion" placeholder="Calle, número, ciudad">
+      </div>
+      <div class="field">
+        <label for="clEmail">Email del cliente</label>
+        <input type="email" id="clEmail" placeholder="cliente@email.com">
+      </div>
+      <button class="btn btn-ghost btn-sm" id="saveClienteBtn" type="button">Guardar como cliente habitual</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Conceptos de la intervención</div>
+      <div class="item-head">
+        <span>Descripción</span><span>Cant.</span><span>Precio €</span><span>Importe</span><span></span>
+      </div>
+      <div id="itemsWrap"></div>
+      <button class="btn btn-ghost btn-sm" id="addItemBtn" type="button">+ Añadir línea</button>
+
+      <div class="totals">
+        <div class="field" style="margin-bottom:10px;">
+          <label for="ivaPct">IVA / impuesto aplicable (%)</label>
+          <input type="number" id="ivaPct" value="21" min="0" step="0.1" style="max-width:120px;">
+        </div>
+        <div class="totals-row"><span>Base imponible</span><span id="tSubtotal">0,00 €</span></div>
+        <div class="totals-row"><span>IVA</span><span id="tIva">0,00 €</span></div>
+        <div class="totals-row grand"><span>Total</span><span id="tTotal">0,00 €</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Notas / forma de pago</div>
+      <div class="field">
+        <textarea id="docNotas" placeholder="Ej. Transferencia a ES00 0000 0000 0000 0000, garantía de la intervención 12 meses, plazo de pago 30 días…"></textarea>
+      </div>
+      <div class="field">
+        <label for="docEstado">Estado</label>
+        <select id="docEstado">
+          <option value="pendiente">Pendiente de cobro</option>
+          <option value="pagada">Pagada</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-dark" id="btnGuardar" type="button">Guardar en historial</button>
+      <button class="btn btn-primary" id="btnPdf" type="button">Exportar PDF</button>
+      <button class="btn btn-ghost" id="btnEmail" type="button">Enviar por email</button>
+    </div>
+  </section>
+
+  <!-- HISTORIAL -->
+  <section class="view" id="view-historial">
+    <div class="field search">
+      <input type="text" id="buscarHist" placeholder="Buscar por cliente o número…">
+    </div>
+    <div id="histList"></div>
+  </section>
+
+  <!-- CLIENTES -->
+  <section class="view" id="view-clientes">
+    <button class="btn btn-primary btn-block" id="btnNuevoCliente" type="button" style="margin-bottom:14px;">+ Nuevo cliente</button>
+    <div id="clientesList"></div>
+  </section>
+
+  <!-- EQUIPO / USUARIOS -->
+  <section class="view" id="view-usuarios">
+    <div class="card">
+      <div class="card-title">Código de equipo</div>
+      <p style="font-size:13px;color:var(--text-mute);margin-top:0;">Comparte este código con tus compañeros. Al registrarse con él, verán y podrán gestionar los mismos clientes, facturas y datos de empresa.</p>
+      <div class="invite-box">
+        <span id="inviteCodeTxt">--------</span>
+        <button class="btn btn-ghost btn-sm" id="copyInviteBtn" type="button">Copiar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Personas con acceso</div>
+      <div id="usuariosList"></div>
+    </div>
+  </section>
+
+  <!-- EMPRESA / AJUSTES -->
+  <section class="view" id="view-empresa">
+    <div class="card">
+      <div class="card-title">Datos de tu empresa o actividad</div>
+      <div class="field" style="display:flex;align-items:center;gap:12px;">
+        <img id="logoPreview" class="logo-preview" src="" alt="" style="display:none;">
+        <div style="flex:1;">
+          <label for="empLogo">Logo (opcional)</label>
+          <input type="file" id="empLogo" accept="image/*">
+        </div>
+      </div>
+      <div class="field">
+        <label for="empNombre">Nombre / razón social</label>
+        <input type="text" id="empNombre" placeholder="Ej. Instalaciones García, Estudio Ruiz Consultoría…">
+      </div>
+      <div class="field">
+        <label for="empProfesion">Actividad / profesión</label>
+        <input type="text" id="empProfesion" placeholder="Electricista, fontanero, informático, consultor…">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="empNif">NIF / CIF</label>
+          <input type="text" id="empNif" placeholder="B00000000">
+        </div>
+        <div class="field">
+          <label for="empTelefono">Teléfono</label>
+          <input type="tel" id="empTelefono" placeholder="600 000 000">
+        </div>
+      </div>
+      <div class="field">
+        <label for="empDireccion">Dirección fiscal</label>
+        <input type="text" id="empDireccion" placeholder="Calle, número, ciudad, CP">
+      </div>
+      <div class="field">
+        <label for="empEmail">Email de contacto</label>
+        <input type="email" id="empEmail" placeholder="tuempresa@email.com">
+      </div>
+      <div class="field">
+        <label for="empIban">IBAN (opcional, para notas de pago)</label>
+        <input type="text" id="empIban" placeholder="ES00 0000 0000 0000 0000">
+      </div>
+      <button class="btn btn-primary btn-block" id="btnGuardarEmpresa" type="button">Guardar datos</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Numeración</div>
+      <div class="field">
+        <label for="empPrefijo">Prefijo de factura</label>
+        <input type="text" id="empPrefijo" placeholder="Ej. 2026-">
+      </div>
+      <div class="field">
+        <label for="empSiguiente">Próximo número</label>
+        <input type="number" id="empSiguiente" min="1">
+      </div>
+      <button class="btn btn-ghost btn-block" id="btnGuardarNum" type="button">Guardar numeración</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--danger);">Datos</div>
+      <button class="btn btn-danger btn-block" id="btnBorrarTodo" type="button">Borrar todo el historial y clientes</button>
+    </div>
+  </section>
+</div>
+
+<!-- Modal: ver / reimprimir factura del historial -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitulo">Documento</h2>
+      <button class="close-x" id="modalClose">&times;</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="actions-row" style="margin-top:14px;">
+      <button class="btn btn-primary" id="modalPdfBtn" type="button">Exportar PDF</button>
+      <button class="btn btn-ghost" id="modalEmailBtn" type="button">Enviar por email</button>
+      <button class="btn btn-dark" id="modalDupBtn" type="button">Duplicar</button>
+      <button class="btn btn-danger" id="modalDelBtn" type="button">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
